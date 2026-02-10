@@ -1,4 +1,3 @@
-
 // STATE
 let points = [];
 let redeemed = [];
@@ -41,35 +40,38 @@ function startCatWalk() {
 
 // DATA
 const POSITIVE_TASKS = [
-    // RUTINAS BASICAS (+1)
+    // NUEVAS (DE LA FOTO)
+    { title: "Hacer la cama", icon: "🛏️", points: 1 },
+    { title: "Poner la mesa (Des/Com/Cena)", icon: "🍽️", points: 2 },
+    { title: "Quitar la mesa (Des/Com/Cena)", icon: "🥣", points: 2 },
+    { title: "Ducharse SOLO", icon: "🚿", points: 3 },
+    { title: "Ducharse CASI SOLO", icon: "🧼", points: 2 },
+    { title: "Ducharse CON AYUDA", icon: "🛁", points: 1 },
+    { title: "Lavarse los dientes (x3)", icon: "🦷", points: 1 },
+    { title: "Pórtate bien cole (todo el día)", icon: "🏫", points: 1 },
+    { title: "Comerse TODO", icon: "😋", points: 2 },
+    { title: "Comer VERDURAS", icon: "🥦", points: 1 },
+    { title: "Ayudar en casa", icon: "🤝", points: 1 },
+    { title: "CERO Tablet + Consola (Día)", icon: "📵", points: 8 },
+
+    // ANTERIORES (CONSERVADAS)
     { title: "Ordenar mochila al llegar", icon: "🎒", points: 1 },
     { title: "Vestirse por la mañana", icon: "👕", points: 1 },
     { title: "Ponerse el pijama solo", icon: "🌙", points: 1 },
-    { title: "Lavarse los dientes", icon: "🦷", points: 1 },
-    { title: "Bañarse/Lavarse", icon: "🛁", points: 1 },
-    { title: "Recoger juguetes", icon: "🧸", points: 1 },
+    { title: "Recoger juguetes", icon: "🧸", points: 2 },
     { title: "No dejar ropa suelo", icon: "👖", points: 1 },
-
-    // COMIDA
-    { title: "Comerse TODO el plato", icon: "🍽️", points: 2 },
     { title: "Comerse MEDIO plato", icon: "🥣", points: 1 },
     { title: "Probar comida nueva", icon: "👅", points: 1 },
     { title: "Comer comida nueva ENTERA", icon: "🥗", points: 3 },
     { title: "Comer fruta", icon: "🍎", points: 1 },
-
-    // EXTRAS / RETOS (+3 a +8)
-    { title: "Ayudar en cosas relevantes", icon: "🤝", points: 1 },
-    { title: "Ir al parque a jugar", icon: "🌳", points: 3 },
-    { title: "CERO Tablet en todo el día", icon: "📵", points: 8 },
-    { title: "CERO Consolas en todo el día", icon: "🎮", points: 8 }
+    { title: "Ir al parque a jugar", icon: "🌳", points: 3 }
 ];
 
 const NEGATIVE_TASKS = [
-    { title: "NO comerse la comida", icon: "😤", points: -3 },
-    { title: "Pegar / Hitting", icon: "🥊", points: -1 },
-    { title: "Insultar / Hablar mal", icon: "🤬", points: -1 },
-    { title: "Romper cosas", icon: "🔨", points: -1 },
-    { title: "Chillar / Screaming", icon: "🗣️", points: -1 }
+    { title: "Chillar / Gritos", icon: "🗣️", points: -5 },
+    { title: "Pegar / Hitting", icon: "🥊", points: -3 },
+    { title: "No comerse la comida", icon: "😤", points: -2 },
+    { title: "Insultar / Hablar mal", icon: "🤬", points: -1 }
 ];
 
 // RENDER
@@ -115,6 +117,7 @@ function renderPoints() {
 
     updateText('score-oliver-total', scores.oliver);
     updateText('score-mateo-total', scores.mateo);
+    updateText('score-joint-total', scores.oliver + scores.mateo);
 
     // Assuming simple positive count (optional, sticking to requested total view)
     // We will just show current spendable balance in the big circle.
@@ -190,10 +193,15 @@ function togglePointsLog() {
 }
 
 const REWARDS = [
-    { title: "Noche de cine", cost: 100, icon: "🎬" },
-    { title: "Elige la cena", cost: 50, icon: "🍕" },
-    { title: "Juegos en familia", cost: 40, icon: "🎲" },
-    { title: "Acampada en el salón", cost: 150, icon: "⛺" },
+    // NUEVOS (DE LA FOTO)
+    { title: "Elegir 1 película", cost: 20, icon: "🎬" },
+    { title: "Restaurante (Hamburguesa)", cost: 50, icon: "🍔" },
+    { title: "Cine", cost: 150, icon: "🎟️" },
+    { title: "Elige la cena", cost: 30, icon: "🍕" },
+    { title: "Juegos en familia", cost: 25, icon: "🎲" },
+    { title: "Acampada en el salón", cost: 100, icon: "⛺" },
+
+    // ANTERIORES (CONSERVADOS)
     { title: "Mandar en casa por un día", cost: 150, icon: "👑" },
     { title: "Postre favorito", cost: 25, icon: "🍰" },
     { title: "Comprar tiempo tablet/consola", cost: 125, icon: "🎮" }
@@ -204,7 +212,8 @@ function renderRewards() {
     if (!list) return;
     list.innerHTML = '';
 
-    const currentScores = calculateScores(); // { oliver: X, mateo: Y }
+    const currentScores = calculateScores();
+    const totalJoint = currentScores.oliver + currentScores.mateo;
 
     REWARDS.forEach(r => {
         const div = document.createElement('div');
@@ -212,25 +221,34 @@ function renderRewards() {
 
         const canOliver = currentScores.oliver >= r.cost;
         const canMateo = currentScores.mateo >= r.cost;
+        const canJoint = totalJoint >= r.cost;
 
         div.innerHTML = `
             <div class="reward-info">
                 <span class="reward-icon">${r.icon}</span>
-                <span class="reward-title">${r.title}</span>
-                <span class="reward-cost">${r.cost} pts</span>
+                <div style="display:inline-block">
+                    <span class="reward-title">${r.title}</span><br>
+                    <span class="reward-cost">${r.cost} pts</span>
+                </div>
             </div>
             <div class="reward-actions">
                 <button 
                     onclick="redeemReward('oliver', '${r.title}', ${r.cost})" 
                     class="redeem-btn ${canOliver ? 'can-buy-oliver' : 'locked'}" 
                     ${!canOliver ? 'disabled' : ''}>
-                    OLIVER
+                    OLI
                 </button>
                 <button 
                     onclick="redeemReward('mateo', '${r.title}', ${r.cost})" 
                     class="redeem-btn ${canMateo ? 'can-buy-mateo' : 'locked'}" 
                     ${!canMateo ? 'disabled' : ''}>
-                    MATEO
+                    MAT
+                </button>
+                <button 
+                    onclick="redeemReward('joint', '${r.title}', ${r.cost})" 
+                    class="redeem-btn ${canJoint ? 'can-buy-joint' : 'locked'}" 
+                    ${!canJoint ? 'disabled' : ''}>
+                    JUNTOS
                 </button>
             </div>
         `;
@@ -239,7 +257,11 @@ function renderRewards() {
 }
 
 function redeemReward(child, title, cost) {
-    if (confirm(`¿${child.toUpperCase()} quiere gastar ${cost} puntos en "${title}"?`)) {
+    const confirmMsg = child === 'joint'
+        ? `¿Queréis canjear ${cost} puntos JUNTOS por "${title}"?`
+        : `¿${child.toUpperCase()} quiere gastar ${cost} puntos en "${title}"?`;
+
+    if (confirm(confirmMsg)) {
         redeemed.push({
             id: Date.now(),
             child: child,
@@ -255,14 +277,23 @@ function calculateScores() {
     const scoreO = points.filter(p => p.child === 'oliver').reduce((a, c) => a + c.value, 0);
     const scoreM = points.filter(p => p.child === 'mateo').reduce((a, c) => a + c.value, 0);
 
-    // Abstract redeemed costs
-    const spentO = redeemed.filter(r => r.child === 'oliver').reduce((a, c) => a + c.cost, 0);
-    const spentM = redeemed.filter(r => r.child === 'mateo').reduce((a, c) => a + c.cost, 0);
+    // Filter redemptions
+    const spentSoloO = redeemed.filter(r => r.child === 'oliver').reduce((a, c) => a + c.cost, 0);
+    const spentSoloM = redeemed.filter(r => r.child === 'mateo').reduce((a, c) => a + c.cost, 0);
+
+    // Joint redemptions: split cost
+    const jointRedemptions = redeemed.filter(r => r.child === 'joint');
+    const spentJoint = jointRedemptions.reduce((a, c) => a + c.cost, 0);
+
+    // How to split joint cost? For simplicity, we deduct from the "virtual" total.
+    // If we want it to affect their individual balances for solo purchases:
+    // We split the joint cost 50/50.
+    const splitCost = spentJoint / 2;
 
     return {
-        oliver: scoreO - spentO,
-        mateo: scoreM - spentM,
-        historicalOliver: scoreO, // Cumulative positives + negatives (net total earned ever)
+        oliver: Math.max(0, scoreO - spentSoloO - splitCost),
+        mateo: Math.max(0, scoreM - spentSoloM - splitCost),
+        historicalOliver: scoreO,
         historicalMateo: scoreM
     };
 }
@@ -288,10 +319,14 @@ function renderRedeemedHistory() {
         const div = document.createElement('div');
         div.className = 'redeemed-item';
         const dateStr = new Date(r.date).toLocaleDateString();
-        const color = r.child === 'oliver' ? 'var(--primary-cyan)' : 'var(--primary-pink)';
+
+        let color = 'var(--primary-yellow)';
+        let label = 'J';
+        if (r.child === 'oliver') { color = 'var(--primary-cyan)'; label = 'O'; }
+        if (r.child === 'mateo') { color = 'var(--primary-pink)'; label = 'M'; }
 
         div.innerHTML = `
-            <span style="color:${color}; font-weight:bold;">${r.child.toUpperCase().slice(0, 1)}</span>
+            <span style="color:${color}; font-weight:bold; width:20px; display:inline-block;">${label}</span>
             <span style="flex:1; margin-left:10px; color:var(--text-dim);">${r.reward}</span>
             <span style="color:var(--text-dim); font-size:0.8em;">${dateStr}</span>
         `;
